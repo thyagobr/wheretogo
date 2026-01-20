@@ -6,9 +6,13 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/thyagobr/wheretogo/internal/handlers"
+  "github.com/thyagobr/wheretogo/internal/db"
+
 )
 
 func main() {
+	db.InitDB()
+
 	r := chi.NewRouter()
 
 	r.Route("/places", func(r chi.Router) {
