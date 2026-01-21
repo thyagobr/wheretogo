@@ -10,5 +10,4 @@ type Place struct {
 	City    string `json:"city"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	//Description string `json:"description"`
 }

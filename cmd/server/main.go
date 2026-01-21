@@ -17,6 +17,8 @@ func main() {
 
 	r.Route("/places", func(r chi.Router) {
 		r.Get("/", handlers.GetPlaces)
+		r.Get("/{id}", handlers.GetPlace)
+		r.Post("/", handlers.CreatePlace)
 	})
 
 	log.Println("Server running on http://localhost:8080")
