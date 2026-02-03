@@ -36,6 +36,10 @@ func main() {
 		r.Get("/{id}/events", handlers.GetPlaceEvents)
 	})
 
+	r.Route("/auth/login", func(r chi.Router) {
+		r.Post("/", handlers.Login)
+	})
+
 	log.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
