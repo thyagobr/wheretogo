@@ -8,21 +8,40 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/thyagobr/wheretogo/internal/models"
   "github.com/thyagobr/wheretogo/internal/db"
+	"github.com/thyagobr/wheretogo/internal/dtos"
 )
 
-func GetPlaces(w http.ResponseWriter, r *http.Request) {
-	var places []models.Place
+type ApiResponse[T any] struct {
+	Data T `json:"data"`
+}
 
-	result := db.DB.Find(&places)
+type PlacesResponse struct {
+	Places []dtos.PlaceResponse `json:"places"`
+}
+
+func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
+
+	result := db.DB.Preload("Tags").Find(&places)
 	if result.Error != nil {
 		http.Error(w, "Failed to retrieve places", http.StatusInternalServerError)
 		return
 	}
 
+	placeResponses := make([]dtos.PlaceResponse, len(places))
+	for i, place := range places {
+		placeResponses[i] = dtos.ToPlaceResponse(place)
+	}
+
+	apiResp := ApiResponse[PlacesResponse]{
+		Data: PlacesResponse{
+			Places: placeResponses,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	_ = json.NewEncoder(w).Encode(places)
+	_ = json.NewEncoder(w).Encode(apiResp)
 }
 
 func GetPlace(w http.ResponseWriter, r *http.Request) {
