@@ -16,7 +16,8 @@ type ApiResponse[T any] struct {
 }
 
 type PlacesResponse struct {
-	Places []dtos.PlaceResponse `json:"places"`
+	Places []dtos.PlaceResponse `json:"places,omitempty"`
+	Place dtos.PlaceResponse `json:"place,omitempty"`
 }
 
 func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
@@ -58,16 +59,24 @@ func GetPlace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var place models.Place
-	result := db.DB.First(&place, id)
+	result := db.DB.Preload("Tags").First(&place, id)
 	if result.Error != nil {
 		http.Error(w, "Place not found", http.StatusNotFound)
 		return
 	}
 
+	placeResponse := dtos.ToPlaceResponse(place)
+
+	apiResp := ApiResponse[PlacesResponse]{
+		Data: PlacesResponse{
+			Place: placeResponse,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	_ = json.NewEncoder(w).Encode(place)
+	_ = json.NewEncoder(w).Encode(apiResp)
 }
 
 type CreatePlaceRequest struct {
