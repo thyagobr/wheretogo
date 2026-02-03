@@ -11,6 +11,11 @@ type PlaceResponse struct {
 	Tags 		[]TagResponse `json:"tags"`
 }
 
+type PlacesResponse struct {
+	Places []PlaceResponse `json:"places,omitempty"`
+	Place *PlaceResponse `json:"place,omitempty"`
+}
+
 func ToPlaceResponse(place models.Place) PlaceResponse {
 	tags := make([]TagResponse, len(place.Tags))
 	for i, tag := range place.Tags {

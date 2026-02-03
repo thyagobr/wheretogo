@@ -15,11 +15,6 @@ type ApiResponse[T any] struct {
 	Data T `json:"data"`
 }
 
-type PlacesResponse struct {
-	Places []dtos.PlaceResponse `json:"places,omitempty"`
-	Place dtos.PlaceResponse `json:"place,omitempty"`
-}
-
 func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
 
 	result := db.DB.Preload("Tags").Find(&places)
@@ -33,8 +28,8 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Pla
 		placeResponses[i] = dtos.ToPlaceResponse(place)
 	}
 
-	apiResp := ApiResponse[PlacesResponse]{
-		Data: PlacesResponse{
+	apiResp := ApiResponse[dtos.PlacesResponse]{
+		Data: dtos.PlacesResponse{
 			Places: placeResponses,
 		},
 	}
@@ -67,9 +62,9 @@ func GetPlace(w http.ResponseWriter, r *http.Request) {
 
 	placeResponse := dtos.ToPlaceResponse(place)
 
-	apiResp := ApiResponse[PlacesResponse]{
-		Data: PlacesResponse{
-			Place: placeResponse,
+	apiResp := ApiResponse[dtos.PlacesResponse]{
+		Data: dtos.PlacesResponse{
+			Place: &placeResponse,
 		},
 	}
 
