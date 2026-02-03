@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/thyagobr/wheretogo/internal/models"
@@ -102,6 +103,11 @@ type CreatePlaceRequest struct {
 	Address string `json:"address"`
 	Country string `json:"country"`
 	City    string `json:"city"`
+	Tags    []CreateTagRequest `json:"tags"`
+}
+
+type CreateTagRequest struct {
+	Text string `json:"text"`
 }
 
 func CreatePlace(w http.ResponseWriter, r *http.Request) {
@@ -117,6 +123,8 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 		Address: createPlaceReq.Address,
 		Country: createPlaceReq.Country,
 		City:    createPlaceReq.City,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	result := db.DB.Create(&place)
@@ -125,7 +133,26 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	placeResponse := dtos.ToPlaceResponse(place)
+	tags := make([]models.Tag, len(createPlaceReq.Tags))
+	for i, tag := range createPlaceReq.Tags {
+		tags[i] = models.Tag{
+			Text:    			tag.Text,
+			TaggableID: 	place.ID,
+			TaggableType: "Place",
+		}
+	}
+	if len(tags) > 0 {
+		result = db.DB.Create(&tags)
+		if result.Error != nil {
+			http.Error(w, "Failed to create tags", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	var createdPlace models.Place
+	db.DB.Preload("Tags").First(&createdPlace, place.ID)
+
+	placeResponse := dtos.ToPlaceResponse(createdPlace)
 
 	apiResp := ApiResponse[dtos.PlacesResponse]{
 		Data: dtos.PlacesResponse{
