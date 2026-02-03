@@ -10,6 +10,8 @@ type Event struct {
 	Description string `json:"description"`
 	Public      bool   `json:"public"`
 	Tags []Tag `json:"tags" gorm:"polymorphic:Taggable;polymorphicValue:Event"`
+	PlaceID uint  `json:"place_id"`         // foreign key column
+	Place   Place `json:"place" gorm:"foreignKey:PlaceID"` // association
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

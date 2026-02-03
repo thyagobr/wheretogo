@@ -11,6 +11,7 @@ func ToEventResponse(event models.Event) EventResponse {
 		EndsAt:      event.EndsAt,
 		Description: event.Description,
 		Public:      event.Public,
+		Place:       event.Place,
 	}
 }
 
@@ -21,6 +22,7 @@ type EventResponse struct {
 	EndsAt      *time.Time `json:"endsAt"`
 	Description string `json:"description"`
 	Public      bool   `json:"public"`
+	Place       models.Place `json:"place"`
 }
 
 type EventsResponse struct {

@@ -29,6 +29,10 @@ func main() {
 
 	r.Use(middlewares.HttpLoggingMiddleware)
 
+	r.Route("/auth/login", func(r chi.Router) {
+		r.Post("/", handlers.Login)
+	})
+
 	r.Route("/places", func(r chi.Router) {
 		r.Get("/", handlers.GetPlaces)
 		r.Get("/{id}", handlers.GetPlace)
@@ -37,8 +41,10 @@ func main() {
 		r.Get("/search_address", handlers.SearchAddress)
 	})
 
-	r.Route("/auth/login", func(r chi.Router) {
-		r.Post("/", handlers.Login)
+	r.Route("/events", func(r chi.Router) {
+		r.Get("/", handlers.GetEvents)
+		//r.Get("/{id}", handlers.GetEvent)
+		//r.Post("/", handlers.CreateEvent)
 	})
 
 	log.Println("Server running on http://localhost:8080")
