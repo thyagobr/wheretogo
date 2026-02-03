@@ -15,8 +15,13 @@ type ApiResponse[T any] struct {
 	Data T `json:"data"`
 }
 
-func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
+func respondJson(w http.ResponseWriter, status int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
 
+func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
 	result := db.DB.Preload("Tags").Find(&places)
 	if result.Error != nil {
 		http.Error(w, "Failed to retrieve places", http.StatusInternalServerError)
@@ -34,10 +39,7 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Pla
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	_ = json.NewEncoder(w).Encode(apiResp)
+	respondJson(w, http.StatusOK, apiResp)
 }
 
 func GetPlace(w http.ResponseWriter, r *http.Request) {
@@ -68,10 +70,7 @@ func GetPlace(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	_ = json.NewEncoder(w).Encode(apiResp)
+	respondJson(w, http.StatusOK, apiResp)
 }
 
 func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
@@ -99,16 +98,13 @@ func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
 		eventResponses[i] = dtos.ToEventResponse(event)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
 	apiResp := ApiResponse[dtos.EventsResponse] {
 		Data: dtos.EventsResponse {
 			Events: eventResponses,
 		},
 	}
 
-	_ = json.NewEncoder(w).Encode(apiResp)
+	respondJson(w, http.StatusOK, apiResp)
 }
 
 type CreatePlaceRequest struct {
@@ -139,8 +135,13 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	placeResponse := dtos.ToPlaceResponse(place)
 
-	_ = json.NewEncoder(w).Encode(place)
+	apiResp := ApiResponse[dtos.PlacesResponse]{
+		Data: dtos.PlacesResponse{
+			Place: &placeResponse,
+		},
+	}
+
+	respondJson(w, http.StatusCreated, apiResp)
 }
