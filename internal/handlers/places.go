@@ -79,6 +79,43 @@ func GetPlace(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(apiResp)
 }
 
+func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		http.Error(w, "ID is required", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		return
+	}
+
+	var events []models.Event
+	result := db.DB.Where("place_id = ?", id).Find(&events)
+	if result.Error != nil {
+		http.Error(w, "Failed to retrieve events", http.StatusInternalServerError)
+		return
+	}
+
+	eventResponses := make([]dtos.EventResponse, len(events))
+	for i, event := range events {
+		eventResponses[i] = dtos.ToEventResponse(event)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	apiResp := ApiResponse[dtos.EventsResponse] {
+		Data: dtos.EventsResponse {
+			Events: eventResponses,
+		},
+	}
+
+	_ = json.NewEncoder(w).Encode(apiResp)
+}
+
 type CreatePlaceRequest struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`

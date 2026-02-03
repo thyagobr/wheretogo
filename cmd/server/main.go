@@ -33,6 +33,7 @@ func main() {
 		r.Get("/", handlers.GetPlaces)
 		r.Get("/{id}", handlers.GetPlace)
 		r.Post("/", handlers.CreatePlace)
+		r.Get("/{id}/events", handlers.GetPlaceEvents)
 	})
 
 	log.Println("Server running on http://localhost:8080")
