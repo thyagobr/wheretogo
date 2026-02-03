@@ -34,6 +34,7 @@ func main() {
 		r.Get("/{id}", handlers.GetPlace)
 		r.Post("/", handlers.CreatePlace)
 		r.Get("/{id}/events", handlers.GetPlaceEvents)
+		r.Get("/search_address", handlers.SearchAddress)
 	})
 
 	r.Route("/auth/login", func(r chi.Router) {

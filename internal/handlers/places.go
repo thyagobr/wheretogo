@@ -10,6 +10,7 @@ import (
 	"github.com/thyagobr/wheretogo/internal/models"
   "github.com/thyagobr/wheretogo/internal/db"
 	"github.com/thyagobr/wheretogo/internal/dtos"
+	"github.com/thyagobr/wheretogo/internal/clients"
 )
 
 func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
@@ -23,7 +24,6 @@ func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Pla
 	for i, place := range places {
 		placeResponses[i] = dtos.ToPlaceResponse(place)
 	}
-
 	apiResp := ApiResponse[dtos.PlacesResponse]{
 		Data: dtos.PlacesResponse{
 			Places: placeResponses,
@@ -161,4 +161,28 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJson(w, http.StatusCreated, apiResp)
+}
+
+// params: map[city:[berlin] country:[germany] limit:[1] name:[Wohzimmer]]
+func SearchAddress(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	searchReq := dtos.SearchAddressRequest{
+		Name:    queryParams.Get("name"),
+		City:    queryParams.Get("city"),
+		Country: queryParams.Get("country"),
+		Limit:   10,
+	}
+
+	openMapsClient := clients.NewOpenMapsClient()
+	openMapsResp, err := openMapsClient.SearchAddress(searchReq)
+	if err != nil {
+		http.Error(w, "Failed to search address", http.StatusInternalServerError)
+		return
+	}
+
+	apiResp := ApiResponse[[]clients.OpenMapsResponse]{
+		Data: openMapsResp,
+	}
+
+	respondJson(w, http.StatusOK, apiResp)
 }
