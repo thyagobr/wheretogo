@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/thyagobr/wheretogo/internal/models"
-  "github.com/thyagobr/wheretogo/internal/db"
-	"github.com/thyagobr/wheretogo/internal/dtos"
 	"github.com/thyagobr/wheretogo/internal/clients"
+	"github.com/thyagobr/wheretogo/internal/db"
+	"github.com/thyagobr/wheretogo/internal/dtos"
+	"github.com/thyagobr/wheretogo/internal/models"
+	"gorm.io/gorm"
 )
 
-func GetPlaces(w http.ResponseWriter, r *http.Request) { var places []models.Place
+func GetPlaces(w http.ResponseWriter, r *http.Request) {
+	var places []models.Place
 	result := db.DB.Preload("Tags").Find(&places)
 	if result.Error != nil {
 		http.Error(w, "Failed to retrieve places", http.StatusInternalServerError)
@@ -89,8 +91,8 @@ func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
 		eventResponses[i] = dtos.ToEventResponse(event)
 	}
 
-	apiResp := ApiResponse[dtos.EventsResponse] {
-		Data: dtos.EventsResponse {
+	apiResp := ApiResponse[dtos.EventsResponse]{
+		Data: dtos.EventsResponse{
 			Events: eventResponses,
 		},
 	}
@@ -99,10 +101,10 @@ func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 type CreatePlaceRequest struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	Country string `json:"country"`
-	City    string `json:"city"`
+	Name    string             `json:"name"`
+	Address string             `json:"address"`
+	Country string             `json:"country"`
+	City    string             `json:"city"`
 	Tags    []CreateTagRequest `json:"tags"`
 }
 
@@ -119,10 +121,10 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	place := models.Place{
-		Name:    createPlaceReq.Name,
-		Address: createPlaceReq.Address,
-		Country: createPlaceReq.Country,
-		City:    createPlaceReq.City,
+		Name:      createPlaceReq.Name,
+		Address:   createPlaceReq.Address,
+		Country:   createPlaceReq.Country,
+		City:      createPlaceReq.City,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -136,8 +138,8 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 	tags := make([]models.Tag, len(createPlaceReq.Tags))
 	for i, tag := range createPlaceReq.Tags {
 		tags[i] = models.Tag{
-			Text:    			tag.Text,
-			TaggableID: 	place.ID,
+			Text:         tag.Text,
+			TaggableID:   place.ID,
 			TaggableType: "Place",
 		}
 	}
@@ -185,4 +187,51 @@ func SearchAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJson(w, http.StatusOK, apiResp)
+}
+
+func DeletePlace(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if (err != nil) || (id == 0) {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	err = db.DB.Transaction(func(tx *gorm.DB) error {
+		// Delete tags
+		if err := tx.
+			Where("taggable_id = ? AND taggable_type = ?", id, "Place").
+			Delete(&models.Tag{}).
+			Error; err != nil {
+			http.Error(w, "Failed to delete associated tags", http.StatusInternalServerError)
+			return err
+		}
+
+		// Delete events
+		if err := tx.Where("place_id = ?", id).
+			Delete(&models.Event{}).Error; err != nil {
+			return err
+		}
+
+		// Delete tags for events
+		if err := tx.
+			Where("taggable_id IN (?) AND taggable_type = ?",
+				tx.Model(&models.Event{}).Select("id").Where("place_id = ?", id),
+				"Event").
+			Delete(&models.Tag{}).
+			Error; err != nil {
+			http.Error(w, "Failed to delete associated event tags", http.StatusInternalServerError)
+			return err
+		}
+
+		// Delete place
+		if err := tx.Delete(&models.Place{}, id).Error; err != nil {
+			http.Error(w, "Failed to delete place", http.StatusInternalServerError)
+			return err
+		}
+
+		return nil // commit
+	})
+
+	w.WriteHeader(http.StatusNoContent)
 }

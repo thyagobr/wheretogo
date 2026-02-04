@@ -39,6 +39,7 @@ func main() {
 		r.Get("/{id}/events", handlers.GetPlaceEvents)
 		r.Get("/search_address", handlers.SearchAddress)
 		r.With(middlewares.AuthenticationMiddleware).Post("/{id}/events", handlers.CreateEvent)
+		r.With(middlewares.AuthenticationMiddleware).Delete("/{id}", handlers.DeletePlace)
 	})
 
 	r.Route("/events", func(r chi.Router) {
