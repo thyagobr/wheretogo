@@ -6,10 +6,9 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-  "github.com/thyagobr/wheretogo/internal/db"
+	"github.com/thyagobr/wheretogo/internal/db"
 	"github.com/thyagobr/wheretogo/internal/handlers"
 	"github.com/thyagobr/wheretogo/internal/middlewares"
-
 )
 
 func main() {
@@ -36,6 +35,7 @@ func main() {
 	r.Route("/places", func(r chi.Router) {
 		r.Get("/", handlers.GetPlaces)
 		r.Get("/{id}", handlers.GetPlace)
+
 		r.Post("/", handlers.CreatePlace)
 		r.Get("/{id}/events", handlers.GetPlaceEvents)
 		r.Get("/search_address", handlers.SearchAddress)
@@ -43,7 +43,7 @@ func main() {
 
 	r.Route("/events", func(r chi.Router) {
 		r.Get("/", handlers.GetEvents)
-		//r.Get("/{id}", handlers.GetEvent)
+		r.Get("/{id}", handlers.GetEvent)
 		//r.Post("/", handlers.CreateEvent)
 	})
 
