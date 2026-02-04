@@ -35,16 +35,16 @@ func main() {
 	r.Route("/places", func(r chi.Router) {
 		r.Get("/", handlers.GetPlaces)
 		r.Get("/{id}", handlers.GetPlace)
-
-		r.Post("/", handlers.CreatePlace)
+		r.With(middlewares.AuthenticationMiddleware).Post("/", handlers.CreatePlace)
 		r.Get("/{id}/events", handlers.GetPlaceEvents)
 		r.Get("/search_address", handlers.SearchAddress)
+		r.With(middlewares.AuthenticationMiddleware).Post("/{id}/events", handlers.CreateEvent)
 	})
 
 	r.Route("/events", func(r chi.Router) {
 		r.Get("/", handlers.GetEvents)
 		r.Get("/{id}", handlers.GetEvent)
-		//r.Post("/", handlers.CreateEvent)
+		r.With(middlewares.AuthenticationMiddleware).Post("/", handlers.CreateEvent)
 	})
 
 	log.Println("Server running on http://localhost:8080")

@@ -1,7 +1,10 @@
 package dtos
 
-import "github.com/thyagobr/wheretogo/internal/models"
-import "time"
+import (
+	"time"
+
+	"github.com/thyagobr/wheretogo/internal/models"
+)
 
 func ToEventResponse(event models.Event) EventResponse {
 	return EventResponse{
@@ -16,16 +19,25 @@ func ToEventResponse(event models.Event) EventResponse {
 }
 
 type EventResponse struct {
-	ID          uint   `json:"id"`
-	Name				string `json:"name"`
-	StartsAt    time.Time `json:"startsAt"`
-	EndsAt      *time.Time `json:"endsAt"`
-	Description string `json:"description"`
-	Public      bool   `json:"public"`
+	ID          uint         `json:"id"`
+	Name        string       `json:"name"`
+	StartsAt    time.Time    `json:"startsAt"`
+	EndsAt      *time.Time   `json:"endsAt"`
+	Description string       `json:"description"`
+	Public      bool         `json:"public"`
 	Place       models.Place `json:"place"`
 }
 
 type EventsResponse struct {
-	Event *EventResponse   `json:"event,omitempty"`
+	Event  *EventResponse  `json:"event,omitempty"`
 	Events []EventResponse `json:"events,omitempty"`
+}
+
+type CreateEventRequest struct {
+	Name        string     `json:"name"`
+	StartsAt    time.Time  `json:"startsAt"`
+	EndsAt      *time.Time `json:"endsAt,omitempty"`
+	Description string     `json:"description"`
+	Public      bool       `json:"public"`
+	PlaceID     uint       `json:"placeId"`
 }
