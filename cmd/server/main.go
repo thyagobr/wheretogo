@@ -45,6 +45,7 @@ func main() {
 		r.Get("/", handlers.GetEvents)
 		r.Get("/{id}", handlers.GetEvent)
 		r.With(middlewares.AuthenticationMiddleware).Post("/", handlers.CreateEvent)
+		r.With(middlewares.AuthenticationMiddleware).Patch("/{id}", handlers.UpdateEvent)
 	})
 
 	log.Println("Server running on http://localhost:8080")

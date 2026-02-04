@@ -41,3 +41,11 @@ type CreateEventRequest struct {
 	Public      bool       `json:"public"`
 	PlaceID     uint       `json:"placeId"`
 }
+
+type UpdateEventRequest struct {
+	Name        *string    `json:"name,omitempty"`
+	StartsAt    *time.Time `json:"startsAt,omitempty"`
+	EndsAt      *time.Time `json:"endsAt,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	Public      *bool      `json:"public,omitempty"`
+}

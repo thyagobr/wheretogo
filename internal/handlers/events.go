@@ -111,3 +111,58 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	respondJson(w, http.StatusCreated, apiResp)
 }
+
+func UpdateEvent(w http.ResponseWriter, r *http.Request) {
+	var eventParams dtos.UpdateEventRequest
+	err := utils.DecodeJSON(r, &eventParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	idParam := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if (err != nil) || (id == 0) {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		return
+	}
+
+	var event models.Event
+	result := db.DB.First(&event, id)
+	if result.Error != nil {
+		http.Error(w, "Event not found", http.StatusNotFound)
+		return
+	}
+
+	if eventParams.Name != nil {
+		event.Name = *eventParams.Name
+	}
+	if eventParams.Description != nil {
+		event.Description = *eventParams.Description
+	}
+	if eventParams.StartsAt != nil {
+		event.StartsAt = *eventParams.StartsAt
+	}
+	if eventParams.EndsAt != nil {
+		event.EndsAt = eventParams.EndsAt
+	}
+	if eventParams.Public != nil {
+		event.Public = *eventParams.Public
+	}
+
+	saveResult := db.DB.Save(&event)
+	if saveResult.Error != nil {
+		http.Error(w, "Failed to update event", http.StatusInternalServerError)
+		return
+	}
+
+	eventResponse := dtos.ToEventResponse(event)
+
+	apiResp := ApiResponse[dtos.EventsResponse]{
+		Data: dtos.EventsResponse{
+			Event: &eventResponse,
+		},
+	}
+
+	respondJson(w, http.StatusOK, apiResp)
+}
