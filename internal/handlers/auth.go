@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	
-	"github.com/thyagobr/wheretogo/internal/models"
+
 	"github.com/thyagobr/wheretogo/internal/db"
+	"github.com/thyagobr/wheretogo/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,7 +14,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	
+
 	err := json.NewDecoder(r.Body).Decode(&credentials)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -35,16 +35,22 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var loginResponse struct {
-		Token string `json:"token"`
+		Token  string `json:"token"`
+		UserId uint   `json:"userId"`
+		Role   string `json:"role"`
 	}
 
 	loginResponse.Token = user.Token
+	loginResponse.UserId = user.ID
+	loginResponse.Role = user.Role
 
 	respondJson(
 		w,
 		http.StatusOK,
 		ApiResponse[struct {
-			Token string `json:"token"`
+			Token  string `json:"token"`
+			UserId uint   `json:"userId"`
+			Role   string `json:"role"`
 		}]{
 			Data: loginResponse,
 		})
