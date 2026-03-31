@@ -165,6 +165,68 @@ func CreatePlace(w http.ResponseWriter, r *http.Request) {
 	respondJson(w, http.StatusCreated, apiResp)
 }
 
+func UpdatePlace(w http.ResponseWriter, r *http.Request) {
+	respondJson(w, http.StatusNotImplemented, ApiResponse[string]{Data: "Not implemented"})
+	return
+
+	// The code below is a placeholder for the actual implementation.
+	// Uncomment and implement as needed.
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if (err != nil) || (id == 0) {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var updatePlaceReq dtos.UpdatePlaceRequest
+	err = json.NewDecoder(r.Body).Decode(&updatePlaceReq)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	var place models.Place
+	result := db.DB.First(&place, id)
+	if result.Error != nil {
+		http.Error(w, "Place not found", http.StatusNotFound)
+		return
+	}
+
+	if updatePlaceReq.Name != nil {
+		place.Name = *updatePlaceReq.Name
+	}
+
+	if updatePlaceReq.Address != nil {
+		place.Address = *updatePlaceReq.Address
+	}
+
+	if updatePlaceReq.Country != nil {
+		place.Country = *updatePlaceReq.Country
+	}
+
+	if updatePlaceReq.City != nil {
+		place.City = *updatePlaceReq.City
+	}
+
+	place.UpdatedAt = time.Now()
+
+	result = db.DB.Save(&place)
+	if result.Error != nil {
+		http.Error(w, "Failed to update place", http.StatusInternalServerError)
+		return
+	}
+
+	placeResponse := dtos.ToPlaceResponse(place)
+
+	apiResp := ApiResponse[dtos.PlacesResponse]{
+		Data: dtos.PlacesResponse{
+			Place: &placeResponse,
+		},
+	}
+
+	respondJson(w, http.StatusOK, apiResp)
+}
+
 // params: map[city:[berlin] country:[germany] limit:[1] name:[Wohzimmer]]
 func SearchAddress(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
