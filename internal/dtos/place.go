@@ -12,7 +12,7 @@ type PlaceResponse struct {
 }
 
 type PlacesResponse struct {
-	Places []PlaceResponse `json:"places,omitempty"`
+	Places []PlaceResponse `json:"places"`
 	Place  *PlaceResponse  `json:"place,omitempty"`
 }
 

@@ -30,7 +30,7 @@ type EventResponse struct {
 
 type EventsResponse struct {
 	Event  *EventResponse  `json:"event,omitempty"`
-	Events []EventResponse `json:"events,omitempty"`
+	Events []EventResponse `json:"events"`
 }
 
 type CreateEventRequest struct {
