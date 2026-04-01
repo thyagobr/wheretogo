@@ -80,7 +80,7 @@ func GetPlaceEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var events []models.Event
-	result := db.DB.Where("place_id = ?", id).Find(&events)
+	result := db.DB.Where("place_id = ? AND start_at > ?", id, time.Now()).Find(&events)
 	if result.Error != nil {
 		http.Error(w, "Failed to retrieve events", http.StatusInternalServerError)
 		return
