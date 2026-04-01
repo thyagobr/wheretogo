@@ -18,7 +18,7 @@ func main() {
 
 	// CORS middleware
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3010"}, // allow all origins
+		AllowedOrigins:   []string{"http://localhost:3010", "https://whereto-inky.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
